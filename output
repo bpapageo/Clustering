@@ -1,0 +1,7 @@
+Algorithm: I2A2U2
+Metric: cosine
+CLUSTER-0 {size: 1185 ,centroid: 1709 }
+CLUSTER-1 {size: 835 ,centroid: 4357 }
+CLUSTER-2 {size: 1194 ,centroid: 1896 }
+CLUSTER-3 {size: 1786 ,centroid: 2430 }
+clustering_time: 200.366
