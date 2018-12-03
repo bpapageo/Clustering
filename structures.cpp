@@ -772,7 +772,7 @@ myvector** Kmeansupdate(int numC,myvector** v,int num,List** clusters){
 	myvector** result  = new myvector*[numC];
 	for (int i = 0; i < numC; i++)
 	{
-		cout<<clusters[i]->length()<<endl;
+		//cout<<clusters[i]->length()<<endl;
 		if(clusters[i]->length()>0){
 			result[i]=clusters[i]->pointsum();
 		}
@@ -788,7 +788,7 @@ myvector** PAMupdate(int numC,myvector** v,int num,List** clusters,int metric){
 
 	myvector** result  = new myvector*[numC];
 	for (int i = 0; i < numC; i++){
-		cout<<clusters[i]->length()<<endl;
+		//cout<<clusters[i]->length()<<endl;
 		if(clusters[i]->length()>0){
 			result[i]=clusters[i]->medoid(metric);
 		}
