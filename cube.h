@@ -40,9 +40,9 @@ struct listcubenode{
 
 class listcube{
 private:
-	listcubenode* head;
 	int size;
 public:
+	listcubenode* head;
 	listcube();
 	~listcube();
     void insert(myvectorcube*,int*);
@@ -56,18 +56,18 @@ public:
 
 };
 
-class hashtable{
+class cube{
 	int size;
 	int K;
 	int dim;
 	int probes;
-	listcube** listcube;
+	listcube** list;
 	myvectorcube** v;
 	long double* t;
 	int* r;
 public:
-	hashtable(int,int,int,bool,int);
-	~hashtable();
+	cube(int,int,int,bool,int);
+	~cube();
 	int* hashfunction(myvectorcube*,bool);
 	void insert(myvectorcube*,bool);
 	myvectorcube* search(myvectorcube*,bool);
@@ -76,13 +76,11 @@ public:
 	void hashprint();
 };
 
-long long double euc(long long double*,long long double*,int);
+long double euc(long double*,long double*,int);
 
 long double cos(long double*,long double*,int);
 
 long double inner_product(myvectorcube*,myvectorcube*);
-
-long double* normal_distribute(int);
 
 int HammingDist(int,int);
 

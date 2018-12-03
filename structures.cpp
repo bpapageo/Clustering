@@ -1,5 +1,6 @@
 #include "structures.h"
 #include "lsh.h"
+#include "cube.h"
 
 int ind;
 
@@ -24,12 +25,6 @@ myvector::myvector(int num,long double* pts,int dim,bool t){
 				pointsd[i]=pts[i];
 
 		}
-		/*cout<<"created myvector name "<<id<<" with dim "<<dim<<endl;
-		cout<<"Points:"<<endl;
-		for(int i=0;i<dim;i++){
-			cout<<points[i]<<" ";
-		}	
-		cout<<endl;	*/
 
 }
 
@@ -505,7 +500,7 @@ List** LSHrangeassign(int numC,myvector** centroids,myvector** v,int metric,int 
 		int sum=0;
 		for (int j = 0; j < numC; j++){
 			for(int i=0;i<L;i++){
-				Listlsh* tempres=hmap[i]->Rangesearch(centroidslsh[j],metric,R,j,centroidslsh);
+				hmap[i]->Rangesearch(centroidslsh[j],metric,R,j,centroidslsh);
 			}
 		}
 		int flag3=0,flag2=0;
@@ -570,6 +565,169 @@ List** LSHrangeassign(int numC,myvector** centroids,myvector** v,int metric,int 
 	for (int i = 0; i < numC; i++)		
 	{
 		ListlshNode* temp=result2[i]->head;
+		while(temp!=NULL){
+			for (int j = 0; j < num; j++)
+			{
+				if(v[j]->id==temp->ptr->id){
+
+					int minv2;
+					long double min2=numeric_limits<long double>::max();
+					if(metric==0){
+						for(int k=0;k<numC;k++){
+							if(k==i)continue;
+							long double dis=euclidean_dist(v[j]->pointsd,centroids[k]->pointsd,v[i]->d);
+							if(dis<min2){
+								min2=dis;
+								minv2=k;
+							}
+						}
+					}
+					else if(metric==1){
+						for(int k=0;k<numC;k++){
+							if(k==i)continue;
+							long double dis=cosine_similarity(v[j]->pointsd,centroids[k]->pointsd,v[i]->d);
+							if(dis<min2){
+								min2=dis;
+								minv2=k;
+							}
+						}
+					}
+					result[i]->insert(v[j],i,minv2);
+					break;
+				}
+			}
+			temp=temp->next;
+		}
+	}
+
+	return result;
+
+}
+
+List** CUBErangeassign(int numC,myvector** centroids,myvector** v,int metric,int num,int probes,int probedim,int dim){
+	
+	List** result;
+	listcube** result2 = new listcube*[numC];
+	for(int i=0;i<numC;i++){
+		result2[i]=new listcube();
+	}
+
+    ///construct cube
+	cube* hmap = new cube(num/8,probedim,dim,metric,probes);
+
+	myvectorcube** vlsh=new myvectorcube*[num];
+	for (int i = 0; i < num; i++)
+	{
+		vlsh[i]= new myvectorcube(v[i]->id,v[i]->pointsd,dim,1);
+	}
+
+	myvectorcube** centroidslsh=new myvectorcube*[numC];
+	for (int i = 0; i < numC; i++)
+	{
+		centroidslsh[i]= new myvectorcube(centroids[i]->id,centroids[i]->pointsd,dim,1);
+	}
+	//insert the points to them
+	for(int j=0;j<num;j++){
+			hmap->insert(vlsh[j],metric);
+	}
+	long double min = numeric_limits<long double>::max();		
+
+	for(int i=0;i<numC;i++){
+		for(int j=0;j<numC;j++){
+			long double dist;
+			if (metric==0)
+			{
+				if(i!=j){
+					dist=euclidean_dist(centroids[i]->pointsd,centroids[j]->pointsd,dim);
+					if (dist<min)
+					{
+						min=dist;
+					}	
+				}
+			}
+			else if (metric==1)
+			{
+				if(i!=j){
+					dist=cosine_similarity(centroids[i]->pointsd,centroids[j]->pointsd,dim);
+					if (dist<min)
+					{
+						min=dist;
+					}	
+				}
+			}	
+		}
+	}
+	cout<<min<<endl;
+
+	long double R=min/2;
+	int counter=0,sum2=0,help=0,num2,flag12;
+	while(1){
+		//cout<<R<<endl;
+		int sum=0;
+		for (int j = 0; j < numC; j++){
+			hmap->Rangesearch(centroidslsh[j],metric,R,j,centroidslsh);
+		}
+		int flag3=0,flag2=0;
+		for (int i = 0; i < num; i++)
+		{
+			if(vlsh[i]->flag==-1){
+				sum++;
+				flag3=1;
+			}
+			else{
+				int flag=0;
+				listcubenode* temp=result2[vlsh[i]->flag]->head;
+				while(temp!=NULL){
+					if(temp->ptr->id==vlsh[i]->id){
+						flag=1;
+						break;
+					}
+					temp=temp->next;
+				}
+				if(flag==0){
+					result2[vlsh[i]->flag]->insert(vlsh[i],NULL);
+				}				
+			}
+
+		}
+		//cout<<sum<<endl;
+		if(help==sum){
+			sum2++;
+		}
+		help=sum;
+		if(sum2==10){
+			flag2=1;
+		}
+		if((flag2==1)||(flag3==0)){
+			flag12=flag2;
+			num2=sum;
+			break;
+		}
+		counter++;
+		R*=2;
+	}
+	if(flag12==1){
+		myvector** restvecs=new myvector*[num2];
+		counter=0;
+		for (int i = 0; i < num; i++)
+		{
+			if(vlsh[i]->flag==-1){
+				restvecs[counter]=new myvector(vlsh[i]->id,vlsh[i]->pointsd,dim,1);
+				counter++;
+			}
+		}
+		result=LloydsAssign(numC,centroids,restvecs,metric,num2);
+	}
+	else{
+		result=new List*[numC];
+		for(int i=0;i<numC;i++){
+			result[i]=new List();
+		}
+	}
+
+	for (int i = 0; i < numC; i++)		
+	{
+		listcubenode* temp=result2[i]->head;
 		while(temp!=NULL){
 			for (int j = 0; j < num; j++)
 			{

@@ -1,7 +1,7 @@
 #include "cube.h"
 
-default_random_engine generator;
-normal_distribution<long double> distribution(0.0,1.0);
+default_random_engine gen;
+normal_distribution<long double> distr(0.0,1.0);
 
 myvectorcube::myvectorcube(char* name,int* pts,int dim,bool t){
 		type=t;
@@ -32,7 +32,7 @@ myvectorcube::myvectorcube(int n,long double* pts,int dim,bool t){
 myvectorcube::~myvectorcube(){
 	delete []nameid;
 	if(type==0){
-		delete []points;
+		delete []pointsd;
 	}
 	else{
 		delete []pointsd;
@@ -115,7 +115,7 @@ void listcube::display(){
 	while(temp!=NULL){
 		cout<<temp->ptr->nameid<<" ";
 		for(int i=0;i<temp->ptr->d;i++){
-			cout<<temp->ptr->points[i]<<" ";
+			cout<<temp->ptr->pointsd[i]<<" ";
 		}
 		cout<<endl;
 		temp=temp->next;
@@ -134,15 +134,15 @@ myvectorcube* listcube::search(myvectorcube* pt,bool metric,int K,int* g){
 	listcubenode* temp = head;
 	while(temp!=NULL){
 		if(metric==0){
-			if((euclidean_dist(pt->points,temp->ptr->points,temp->ptr->d)<min)&&(flag==0)){
-				min=euclidean_dist(pt->points,temp->ptr->points,temp->ptr->d);
+			if((euc(pt->pointsd,temp->ptr->pointsd,temp->ptr->d)<min)&&(flag==0)){
+				min=euc(pt->pointsd,temp->ptr->pointsd,temp->ptr->d);
 				vec=temp->ptr;
 			}
 			temp=temp->next;
 		}
 		else{
-			if((cosine_similarity(pt->points,temp->ptr->points,temp->ptr->d)<min)&&(flag==0)){
-				min=cosine_similarity(pt->points,temp->ptr->points,temp->ptr->d);
+			if((cos(pt->pointsd,temp->ptr->pointsd,temp->ptr->d)<min)&&(flag==0)){
+				min=cos(pt->pointsd,temp->ptr->pointsd,temp->ptr->d);
 				vec=temp->ptr;
 			}
 			temp=temp->next;
@@ -159,15 +159,15 @@ myvectorcube* listcube::exhaustedsearch(myvectorcube* pt,bool metric,int K){
 	listcubenode* temp = head;
 	while(temp!=NULL){
 		if(metric==0){
-			if(euclidean_dist(pt->points,temp->ptr->points,temp->ptr->d)<min){
-				min=euclidean_dist(pt->points,temp->ptr->points,temp->ptr->d);
+			if(euc(pt->pointsd,temp->ptr->pointsd,temp->ptr->d)<min){
+				min=euc(pt->pointsd,temp->ptr->pointsd,temp->ptr->d);
 				vec=temp->ptr;
 			}
 			temp=temp->next;
 		}
 		else{
-			if(cosine_similarity(pt->points,temp->ptr->points,temp->ptr->d)<min){
-				min=cosine_similarity(pt->points,temp->ptr->points,temp->ptr->d);
+			if(cos(pt->pointsd,temp->ptr->pointsd,temp->ptr->d)<min){
+				min=cos(pt->pointsd,temp->ptr->pointsd,temp->ptr->d);
 				vec=temp->ptr;
 			}
 			temp=temp->next;
@@ -179,22 +179,48 @@ myvectorcube* listcube::exhaustedsearch(myvectorcube* pt,bool metric,int K){
 
 }
 
-void listcube::Rangesearch(myvectorcube* pt,bool metric,int R,ofstream& output,int K,int* g){
+void listcube::Rangesearch(myvectorcube* pt,int metric,long double R,int K,int* g,int j,myvectorcube** centroids){
 	myvectorcube *vec=NULL;
 	int flag=0;
 	listcubenode* temp = head;
 	while(temp!=NULL){
 		if(metric==0){
-			if((euclidean_dist(pt->points,temp->ptr->points,temp->ptr->d)<R)&&(flag==0)){
+			for(int i=0;i<K;i++){
+				if(g[i]!=(temp->g[i])){
+					flag=1;
+					break;
+				}
+			}
+			long double d=euc(pt->pointsd,temp->ptr->pointsd,temp->ptr->d);
+			if((d<R)&&(flag==0)&&(temp->ptr->flag==-1)){
 				vec=temp->ptr;
-				output<<vec->nameid<<endl;
+				vec->flag=j;
+				vec->dis=d;
+			}
+			else if((d<R)&&(flag==0)&&(temp->ptr->flag!=-1)){
+				vec=temp->ptr;
+				if(d<vec->dis){
+					vec->flag=j;
+					vec->dis=d;
+				}
+
 			}
 			temp=temp->next;
 		}
 		else{
-			if((cosine_similarity(pt->points,temp->ptr->points,temp->ptr->d)<R)&&(flag==0)){
+			long double d=cos(pt->pointsd,temp->ptr->pointsd,temp->ptr->d);
+			if((d<R)&&(flag==0)&&(temp->ptr->flag==-1)){
 				vec=temp->ptr;
-				output<<vec->nameid<<endl;
+				vec->flag=j;
+				vec->dis=d;
+			}
+			else if((d<R)&&(flag==0)&&(temp->ptr->flag!=-1)){
+				vec=temp->ptr;
+				if(d<vec->dis){
+					vec->flag=j;
+					vec->dis=d;
+				}
+
 			}
 			temp=temp->next;
 		}
@@ -206,7 +232,7 @@ void listcube::Rangesearch(myvectorcube* pt,bool metric,int R,ofstream& output,i
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-int* hashtable:: hashfunction(myvectorcube* p,bool metric){
+int* cube:: hashfunction(myvectorcube* p,bool metric){
 	if(metric==0){
 		int* g=new int[K+1];
 		int* binary=new int[K];
@@ -256,10 +282,10 @@ int* hashtable:: hashfunction(myvectorcube* p,bool metric){
 
 
 
-hashtable::hashtable(int s,int k,int d,bool metric,int p):size(s),K(k),dim(d),probes(p){
-	listcube = new listcube*[s];
+cube::cube(int s,int k,int d,bool metric,int p):size(s),K(k),dim(d),probes(p){
+	list = new listcube*[s];
 	for(int i=0;i<s;i++){
-		listcube[i]=new listcube();
+		list[i]=new listcube();
 	}
 	if(metric==0){
 		v=new myvectorcube*[k];
@@ -268,13 +294,13 @@ hashtable::hashtable(int s,int k,int d,bool metric,int p):size(s),K(k),dim(d),pr
 		for(int i=0;i<k;i++){
 		  	long double* map=new long double[dim];
 			for (int i=0; i<dim; i++) {
-				long double number = distribution(generator);
+				long double number = distr(gen);
 			    //cout<<number<<endl;
 			   	map[i]=number;
 			}
 			char buff[4];
 			strcpy(buff,"vvv");
-			v[i] = new myvectorcube(buff,map,dim,1);
+			v[i] = new myvectorcube(-1,map,dim,1);
 			t[i] = w * (rand() / (RAND_MAX + 1.0));
 			r[i] = rand()%800;
 			delete []map;
@@ -289,13 +315,13 @@ hashtable::hashtable(int s,int k,int d,bool metric,int p):size(s),K(k),dim(d),pr
 			//long double* map=normal_distribute(dim);
 	  		long double* map=new long double[dim];
 			for (int i=0; i<dim; i++) {
-				long double number = distribution(generator);
+				long double number = distr(gen);
 			    //cout<<number<<endl;
 			   	map[i]=number;
 			}
 			char buff[4];
 			strcpy(buff,"vvv");
-			v[i] = new myvectorcube(buff,map,dim,1);
+			v[i] = new myvectorcube(-1,map,dim,1);
 			delete []map;
 		}
 		t=NULL;
@@ -305,11 +331,11 @@ hashtable::hashtable(int s,int k,int d,bool metric,int p):size(s),K(k),dim(d),pr
 	}
 }
 
-hashtable::~hashtable(){
+cube::~cube(){
 	for(int i=0;i<size;i++){
-		delete listcube[i];
+		delete list[i];
 	}
-	delete []listcube;
+	delete []list;
 	for(int i=0;i<K;i++){
 		delete v[i];
 	}
@@ -323,25 +349,25 @@ hashtable::~hashtable(){
 
 }
 
-void hashtable::insert(myvectorcube* nodept,bool metric) { 
+void cube::insert(myvectorcube* nodept,bool metric) { 
 		int* g=hashfunction(nodept,metric);
 		///g[K] is the index
-		listcube[g[K]]->insert(nodept,g);
+		list[g[K]]->insert(nodept,g);
 		//listcube[hashfunction(nodept,metric)]->insert(nodept);
 }
 
 
-void hashtable::hashprint(){
+void cube::hashprint(){
 	for(int i=0;i<size;i++){
-		listcube[i]->display();
+		list[i]->display();
 	}
 }
 
-myvectorcube* hashtable::search(myvectorcube* pt,bool metric){
+myvectorcube* cube::search(myvectorcube* pt,bool metric){
 		int* g=hashfunction(pt,metric);
 		long double min;
 		///g[K] is the index
-		myvectorcube* temp = listcube[g[K]]->search(pt,metric,K,g);
+		myvectorcube* temp = list[g[K]]->search(pt,metric,K,g);
 		if(temp!=NULL){
 			min = temp -> dis;
 		}
@@ -350,7 +376,7 @@ myvectorcube* hashtable::search(myvectorcube* pt,bool metric){
 		}
 		int* result = Nextprobes(g[K]);
 		for(int i=0;i<probes;i++){
-			myvectorcube* temp2=listcube[result[i]]->search(pt,metric,K,g);
+			myvectorcube* temp2=list[result[i]]->search(pt,metric,K,g);
 			if(temp2!=NULL){
 				if(temp2->dis<min){
 					min = temp2 -> dis;
@@ -363,19 +389,19 @@ myvectorcube* hashtable::search(myvectorcube* pt,bool metric){
 		return temp;
 }
 
-void hashtable::Rangesearch(myvectorcube* pt,bool metric,int R,int j,myvectorcube** centroids){
+void cube::Rangesearch(myvectorcube* pt,int metric,long double R,int j,myvectorcube** centroids){
 		int* g=hashfunction(pt,metric);
 		///g[K] is the index
-		listcube[g[K]]->Rangesearch(pt,metric,R,output,K,g);
+		list[g[K]]->Rangesearch(pt,metric,R,K,g,j,centroids);
 		int* result = Nextprobes(g[K]);
 		for(int i=0;i<probes;i++){
-			listcube[result[i]]->Rangesearch(pt,metric,R,output,K,g);
+			list[result[i]]->Rangesearch(pt,metric,R,K,g,j,centroids);
 		}
 		delete []result;
 		delete []g;
 }
 
-int* hashtable::Nextprobes(int index){
+int* cube::Nextprobes(int index){
 	int* d = new int[size];
 	for(int i=0;i<size;i++){
 		d[i]=HammingDist(i,index);
@@ -427,25 +453,9 @@ long double cos(long double* X,long double* Y,int dim){
 long double inner_product(myvectorcube* X,myvectorcube* Y){
 	long double sum1=0;
 	for(int i=0;i<X->d;i++){
-		sum1+=(X->points[i])*(Y->pointsd[i]);
+		sum1+=(X->pointsd[i])*(Y->pointsd[i]);
 	}
 	return sum1;
-}
-
-long double* normal_distribute(int times){
-
-  default_random_engine generator;
-  normal_distribution<long double> distribution(0.0,1.0);
-
-  long double* p=new long double[times];
-  //cout<<times<<endl;
-  for (int i=0; i<times; i++) {
-    long double number = distribution(generator);
-    //cout<<number<<endl;
-    p[i]=number;
-  }
-
-  return p;
 }
 
 int HammingDist(int x, int y)

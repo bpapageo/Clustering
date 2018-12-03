@@ -67,6 +67,8 @@ List** LloydsAssign(int,myvector**,myvector**,int,int);
 
 List** LSHrangeassign(int,myvector**,myvector**,int,int,int,int,int);
 
+List** CUBErangeassign(int,myvector**,myvector**,int,int,int,int,int);
+
 myvector** Kmeansupdate(int,myvector**,int,List**);
 
 myvector** PAMupdate(int,myvector**,int,List**,int);

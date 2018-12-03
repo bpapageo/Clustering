@@ -51,7 +51,7 @@ public:
     int length();
 	myvectorlsh* search(myvectorlsh*,bool,int,int*);
 	myvectorlsh* exhaustedsearch(myvectorlsh*,bool,int);
-	Listlsh* Rangesearch(myvectorlsh*,int,long double,int,int*,int,myvectorlsh**);
+	void Rangesearch(myvectorlsh*,int,long double,int,int*,int,myvectorlsh**);
 
 };
 
@@ -69,7 +69,7 @@ public:
 	int* hashfunction(myvectorlsh*,bool);
 	void insert(myvectorlsh*,bool);
 	myvectorlsh* search(myvectorlsh*,bool);
-	Listlsh* Rangesearch(myvectorlsh*,int,long double,int,myvectorlsh**);
+	void Rangesearch(myvectorlsh*,int,long double,int,myvectorlsh**);
 	void hashprint();
 };
 

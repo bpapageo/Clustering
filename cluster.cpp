@@ -7,7 +7,7 @@ int main(int argc,char *argv[]){
 	FILE *stream;
     char *linee = NULL,*name_i,*name_c,*name_o,*nmetric;
     size_t len = 0;
-	int k=4,L=5,numoflines=0,i=0,counter,K;
+	int k=4,L=5,numoflines=0,i=0,counter,K,probes=3,probedim=3;
 	int flag1=0,flag2=0,flag3=0,dim,init=0,assign=0,update=0,complete=0;
 	bool metric;
 	List** clusters; 
@@ -68,6 +68,14 @@ int main(int argc,char *argv[]){
 	        else if(strcmp(pc,"number_of_hash_tables:")==0){
 	        	pc = strtok(NULL,"\n");
 	        	L = atoi(pc);
+	        }
+	        else if(strcmp(pc,"number_of_probes:")==0){
+	        	pc = strtok(NULL,"\n");
+	        	probes = atoi(pc);
+	        }
+	        else if(strcmp(pc,"probe_to_dim:")==0){
+	        	pc = strtok(NULL,"\n");
+	        	probedim = atoi(pc);
 	        }
 	        else if(strcmp(pc,"type_of_init:")==0){
 	        	pc = strtok(NULL,"\n");
@@ -169,8 +177,7 @@ int main(int argc,char *argv[]){
 	        	clusters=LSHrangeassign(K,acentroids,v,metric,numoflines,k,L,dim);
 	        }
 	        else if(assign==3){
-	        	//Cuberangeassign(K,list,numoflines);
-
+	        	clusters=CUBErangeassign(K,acentroids,v,metric,numoflines,probes,probedim,dim);
 	        }
 	        else{
 	        	cout<<"error assignment type given"<<endl;

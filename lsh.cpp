@@ -197,11 +197,11 @@ myvectorlsh* Listlsh::exhaustedsearch(myvectorlsh* pt,bool metric,int K){
 
 }
 
-Listlsh* Listlsh::Rangesearch(myvectorlsh* pt,int metric,long double R,int K,int* g,int j,myvectorlsh** centroids){
+void Listlsh::Rangesearch(myvectorlsh* pt,int metric,long double R,int K,int* g,int j,myvectorlsh** centroids){
 	//cout<<R<<endl;
 	myvectorlsh *vec=NULL;
 	int flag=0;
-	Listlsh* result=new Listlsh();
+	//Listlsh* result=new Listlsh();
 	ListlshNode* temp = head;
 	while(temp!=NULL){
 		if(metric==0){
@@ -216,14 +216,14 @@ Listlsh* Listlsh::Rangesearch(myvectorlsh* pt,int metric,long double R,int K,int
 				vec=temp->ptr;
 				vec->flag=j;
 				vec->dis=d;
-				result->insert(vec,temp->g);
+				//result->insert(vec,temp->g);
 			}
 			else if((d<R)&&(flag==0)&&(temp->ptr->flag!=-1)){
 				vec=temp->ptr;
 				if(d<vec->dis){
 					vec->flag=j;
 					vec->dis=d;
-					result->insert(vec,temp->g);
+					//result->insert(vec,temp->g);
 				}
 
 			}
@@ -235,14 +235,14 @@ Listlsh* Listlsh::Rangesearch(myvectorlsh* pt,int metric,long double R,int K,int
 				vec=temp->ptr;
 				vec->flag=j;
 				vec->dis=d;
-				result->insert(vec,temp->g);
+				//result->insert(vec,temp->g);
 			}
 			else if((d<R)&&(flag==0)&&(temp->ptr->flag!=-1)){
 				vec=temp->ptr;
 				if(d<vec->dis){
 					vec->flag=j;
 					vec->dis=d;
-					result->insert(vec,temp->g);
+					//result->insert(vec,temp->g);
 				}
 
 			}
@@ -250,7 +250,7 @@ Listlsh* Listlsh::Rangesearch(myvectorlsh* pt,int metric,long double R,int K,int
 		}
 	}
 
-	return result;
+	//return result;
 
 }
 
@@ -392,12 +392,13 @@ myvectorlsh* hashtable::search(myvectorlsh* pt,bool metric){
 		//return Listlsh[hashfunction(pt,metric)]->search(pt,metric,K);
 }
 
-Listlsh* hashtable::Rangesearch(myvectorlsh* pt,int metric,long double R,int j,myvectorlsh** centroids){
+void hashtable::Rangesearch(myvectorlsh* pt,int metric,long double R,int j,myvectorlsh** centroids){
 		int* g=hashfunction(pt,metric);
 		///g[K] is the index
-		Listlsh* result=list[g[K]]->Rangesearch(pt,metric,R,K,g,j,centroids);
+		//Listlsh* result=
+		list[g[K]]->Rangesearch(pt,metric,R,K,g,j,centroids);
 		delete []g;
-		return result;
+		//return result;
 		//Listlsh[hashfunction(pt,metric)]->Rangesearch(pt,metric,R,output,K);
 }
 
