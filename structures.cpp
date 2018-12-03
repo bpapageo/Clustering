@@ -491,7 +491,7 @@ List** LSHrangeassign(int numC,myvector** centroids,myvector** v,int metric,int 
 			}	
 		}
 	}
-	cout<<min<<endl;
+	//cout<<min<<endl;
 
 	long double R=min/2;
 	int counter=0,sum2=0,help=0,num2,flag12;
@@ -657,7 +657,7 @@ List** CUBErangeassign(int numC,myvector** centroids,myvector** v,int metric,int
 			}	
 		}
 	}
-	cout<<min<<endl;
+	//cout<<min<<endl;
 
 	long double R=min/2;
 	int counter=0,sum2=0,help=0,num2,flag12;
