@@ -125,7 +125,7 @@ int List::length(){
 myvector* List::pointsum(){
 	long double* p = new long double[head->ptr->d];
 
-	for(int i = 0; i < head->ptr->d; i++){
+	/*for(int i = 0; i < head->ptr->d; i++){
 		long double sum=0;
 		listnode* temp = head;
 		while(temp!=NULL){
@@ -133,7 +133,18 @@ myvector* List::pointsum(){
 			temp=temp->next;
 		}
 		p[i]=sum/(long double)head->ptr->d;
+	}*/
+	for(int i = 0; i < head->ptr->d; i++){
+		p[i]=0;
 	}
+	listnode* temp = head;
+	while(temp!=NULL){
+		for(int i = 0; i < head->ptr->d; i++){
+			p[i]+=(temp->ptr->pointsd[i])/(long double)size;
+		}
+		temp=temp->next;
+	}
+
 
 	ind++;
 	myvector* result = new myvector(ind,p,head->ptr->d,1);
@@ -772,7 +783,7 @@ myvector** Kmeansupdate(int numC,myvector** v,int num,List** clusters){
 	myvector** result  = new myvector*[numC];
 	for (int i = 0; i < numC; i++)
 	{
-		//cout<<clusters[i]->length()<<endl;
+		cout<<clusters[i]->length()<<endl;
 		if(clusters[i]->length()>0){
 			result[i]=clusters[i]->pointsum();
 		}
@@ -788,7 +799,7 @@ myvector** PAMupdate(int numC,myvector** v,int num,List** clusters,int metric){
 
 	myvector** result  = new myvector*[numC];
 	for (int i = 0; i < numC; i++){
-		//cout<<clusters[i]->length()<<endl;
+		cout<<clusters[i]->length()<<endl;
 		if(clusters[i]->length()>0){
 			result[i]=clusters[i]->medoid(metric);
 		}
